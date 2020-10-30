@@ -17,6 +17,5 @@ python run_all.py -m score
 MoDriver's performance comparison module is used as follows: 
 ```{r} 
 python run_all.py -m compare
-# record the corresponding class label for each sample and the output file is ./ TCGA_ATAC_peak_Log2Counts_dedup_sample.spectral
 ```  
 MoDriver is based on Python. The imbalanced deep learning network's implementation was based on the open-source library Numpy 1.19.1, scikit-learn 0.23.2, Keras 2.3.1, and Tensorflow 1.14.0 (GPU version). After testing, this framework has been working correctly on Ubuntu Linux release 20.04. We used the NVIDIA Tesla T4 (16G) for  model training and testing.
