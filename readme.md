@@ -1,5 +1,5 @@
 # MoDriver
-MoDriver is a coding and non-coding cancer driver discovery tool based on imbalanced deep learning. The framework's input is multi-omics profiles (such as mutation, CNA, mRNA) of all the tumor samples. The output is the corresponding driver score, p-value, q-value for each locus. MoDriver is mainly divided into two components: 1. Multiple input-single output deep network is used to generate the original driving element score. 2. A module for generating simulated mutations corresponding to each cancer set and determining the p-values and q-values of each locus.
+MoDriver is a coding and non-coding cancer driver discovery tool based on imbalanced deep learning. The framework's input is multi-omics profiles (such as mutation, CNA, mRNA) of all the tumor samples. The output is the corresponding driver score, p-value, q-value for each locus. MoDriver is mainly divided into two components: 1. Multiple input-single output deep network is used to generate the original driving element score. 2. A module for generating simulated mutations corresponding to each cancer set and determining the p-value and q-value of each locus.
 ```{r}
 # the input data file is features of multi-omics data and runs the following command to finish training  processes: 
 python MoDriver.py -m train -t Pancan
