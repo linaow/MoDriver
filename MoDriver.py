@@ -286,7 +286,8 @@ def main(argv=sys.argv):
     parser.add_argument("-o", dest='out', default="./score/", help="coding file")
     parser.add_argument("-p", dest='threads_num', type=int, default=1, help="threads num")
     args = parser.parse_args()
-    df_tmp = pd.read_csv('./chr_id.txt', header=0, index_col=3, sep='\t', usecols=[0, 1, 2, 3])#header 指定行数用来作为列名，数据开始行数。如果文件中没有列名，则默认为0，否则设置为None。
+    df_tmp = pd.read_csv('./chr_id.txt', header=0, index_col=3, sep='\t', usecols=[0, 1, 2, 3])
+    #header 指定行数用来作为列名，数据开始行数。如果文件中没有列名，则默认为0，否则设置为None。
     #index_col 用作行索引的列编号或者列名，如果给定一个序列则有多个行索引。
     #usecols 返回一个数据子集，该列表中的值必须可以对应到文件中的位置（数字可以对应到指定的列）或者是字符传为文件中的列名。
     all_list = df_tmp.index.tolist()#采用index.tolist()函数将索引转换为python列表
@@ -295,7 +296,7 @@ def main(argv=sys.argv):
     #     key_2018 = "./input/%s.key" % args.type
     pd_key = pd.read_csv(key_2018, header=None, sep='\t')
     pd_neg = pd.read_csv('./neg_2018.txt', header=None, sep='\t')
-    pd_neg.columns = ['gene']
+    pd_neg.columns = ['gene'] #用columns修改列名
     pd_key.columns = ['gene', 'type']
     pd_key = pd_key.drop_duplicates(subset=['gene'], keep='first')
     pd_neg = pd_neg.drop_duplicates(subset=['gene'], keep='first')
