@@ -125,10 +125,10 @@ def check_feature(df):
     return ids
 
 
-def file2data(cancer_type, train_pos, train_neg):
-    mode_all = ['mut', 'cna', 'rna']
-    tumors_file = './tumors.txt'
-    tumors_set = {'Pancan': 'Pancan'}
+def file2data(cancer_type, train_pos, train_neg):#cancer_type 是要运行数据的癌类型   初始值为 Pancan
+    mode_all = ['mut', 'cna', 'rna'] #mutation  
+    tumors_file = './tumors.txt'  #肿瘤的类型
+    tumors_set = {'Pancan': 'Pancan'} #代表的是胰腺癌？
     for line in open(tumors_file, 'rt'):
         txt = line.rstrip().split('\t')
         tumors_set[txt[0]] = txt[1]
@@ -136,13 +136,13 @@ def file2data(cancer_type, train_pos, train_neg):
     X_sim = []
     X = []
     for mode in mode_all:
-        fea_one = './%s/%s.fea' % (tumors_set[cancer_type], mode)
-        df_one = pd.read_csv(fea_one, header=0, index_col=0, sep='\t')
-        fea_sim_one = './sim/%s/%s.fea' % (tumors_set[cancer_type], mode)
+        fea_one = './%s/%s.fea' % (tumors_set[cancer_type], mode)#文件的路径如  MoDriver/Pancan/cna.fea
+        df_one = pd.read_csv(fea_one, header=0, index_col=0, sep='\t')#读文件
+        fea_sim_one = './sim/%s/%s.fea' % (tumors_set[cancer_type], mode)#读sim下的文件  应该是预测的数据
         df_sim_one = pd.read_csv(fea_sim_one, header=0, index_col=0, sep='\t')
         ids = list(df_one.index)
-        mat_train_pos = df_one.loc[train_pos, ::].values.astype(float)
-        mat_train_neg = df_one.loc[train_neg, ::].values.astype(float)
+        mat_train_pos = df_one.loc[train_pos, ::].values.astype(float) # loc 不仅可以输入数字也可以直接column名字，注意先行后列
+        mat_train_neg = df_one.loc[train_neg, ::].values.astype(float) # df.loc[0, :] 这样可以清楚的看出为第0行的所有记录，  train_pos==pos 一个列表
         X_train.append(np.concatenate([mat_train_pos, mat_train_neg]))
         X.append(df_one.values.astype(float))
         X_sim.append(df_sim_one.values.astype(float))
@@ -255,7 +255,9 @@ def build_set(pos_key, neg_key, all_list, nb_imb=20, genome='a'):
     rand_dis = []
     for id in all_list:
         tmps = re.split('::', id)
-        gene = tmps[2]
+        #原来数据的格式为    mirna.prom::chr1:10291-10691_1::NA::NA
+        #将数据的样式用:： 分割为  ['mirna.prom', 'chr1:10291-10691_1', 'NA', 'NA']
+        gene = tmps[2]   
         reg = tmps[0]
         if 'cds' in reg and genome == 'n':
             continue
@@ -267,8 +269,8 @@ def build_set(pos_key, neg_key, all_list, nb_imb=20, genome='a'):
             neg_ids.append(id)
         else:
             rand_dis.append(id)
-    rand_dis = random.sample(rand_dis, len(pos_ids) * nb_imb)
-    neg_ids = list(set(rand_dis) | set(neg_ids))
+    rand_dis = random.sample(rand_dis, len(pos_ids) * nb_imb)#从rand_dis中选取 len(pos_ids) * nb_imb 个元素   rand_lis的长度为 145373 pos_ids长度为1197   1197*20=23940 
+    neg_ids = list(set(rand_dis) | set(neg_ids))#neg_ids 的原来长度为 16 现在变成 23956
     pos_ids.sort()
     neg_ids.sort()
     print(len(pos_ids), len(neg_ids))
@@ -287,24 +289,28 @@ def main(argv=sys.argv):
     parser.add_argument("-p", dest='threads_num', type=int, default=1, help="threads num")
     args = parser.parse_args()
     df_tmp = pd.read_csv('./chr_id.txt', header=0, index_col=3, sep='\t', usecols=[0, 1, 2, 3])
+    #chr	start	end	     id
+    #1	    10291	10691	 mirna.prom::chr1:10291-10691_1::NA::NA
+    #chr代表染色体的号
     #header 指定行数用来作为列名，数据开始行数。如果文件中没有列名，则默认为0，否则设置为None。
     #index_col 用作行索引的列编号或者列名，如果给定一个序列则有多个行索引。
     #usecols 返回一个数据子集，该列表中的值必须可以对应到文件中的位置（数字可以对应到指定的列）或者是字符传为文件中的列名。
-    all_list = df_tmp.index.tolist()#采用index.tolist()函数将索引转换为python列表
+    #id作为索引
+    all_list = df_tmp.index.tolist()#采用index.tolist()函数将索引转换为python列表  将id的值转化为列表
     key_2018 = './key_2018.txt'
     # if args.type  != 'Pancan':
     #     key_2018 = "./input/%s.key" % args.type
     pd_key = pd.read_csv(key_2018, header=None, sep='\t')
     pd_neg = pd.read_csv('./neg_2018.txt', header=None, sep='\t')
     pd_neg.columns = ['gene'] #用columns修改列名
-    pd_key.columns = ['gene', 'type']
-    pd_key = pd_key.drop_duplicates(subset=['gene'], keep='first')
+    pd_key.columns = ['gene', 'type']  #key_2018 代表 基因和癌症的类型
+    pd_key = pd_key.drop_duplicates(subset=['gene'], keep='first')#去重处理函数 
     pd_neg = pd_neg.drop_duplicates(subset=['gene'], keep='first')
-    key_18 = pd_key['gene'].values.tolist()
+    key_18 = pd_key['gene'].values.tolist()#将geng的值转化为列表格式
     neg_18 = pd_neg['gene'].values.tolist()
     known_key = ['TERT']
     neg_key = ['CACNA1E', 'COL11A1', 'DST', 'TTN']
-    key_18 = list(set(key_18) | set(known_key))
+    key_18 = list(set(key_18) | set(known_key)) # 并集
     # neg_key = list(set(neg_18) | set(neg_key))
     pos, neg = build_set(key_18, neg_key, all_list, nb_imb=20)
     # pos, neg = pickle.load(open('pos.neg', 'rb'))
