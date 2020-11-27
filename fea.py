@@ -20,7 +20,7 @@ from os.path import splitext, basename, exists, abspath, isfile, getsize
 
 
 def fea_mut_all(df_ori, str_col):
-    df = df_ori.copy()
+    df = df_ori.copy()  #浅拷贝, a 和 b 是一个独立的对象，但他们的子对象还是指向统一对象（是引用）。
     types = ['Intron', 'IGR', 'RNA', 'Missense_Mutation', "3'UTR", 'lincRNA', "5'Flank", 'Silent', "5'UTR",
              'Splice_Site',
              'Nonsense_Mutation', 'De_novo_Start_OutOfFrame', 'Frame_Shift_Del', 'In_Frame_Del', 'Frame_Shift_Ins',
@@ -101,9 +101,9 @@ def fea_mut(df):
     df.to_csv(fea_bed, header=False, index=False, sep='\t')
     cmd = "bedtools intersect -wb -a %s -b %s >%s" % (sample_bed, fea_bed, tmp_bed)
     check_output(cmd, shell=True)
-    df = pd.read_csv(tmp_bed, header=None, sep='\t', usecols=[3, 4, 8, 9, 10, 11])
+    df = pd.read_csv(tmp_bed, header=None, sep='\t', usecols=[3, 4, 8, 9, 10, 11]) #读取tmp_bed相应列的数据
     df.columns = ['group', 'len', 'type', 'snp', 'id', 'gc']
-    df_len = df.copy().loc[::, ['group', 'len']]
+    df_len = df.copy().loc[::, ['group', 'len']]  #复制group和len的数据
     df_gc = df.copy().loc[::, ['group', 'gc']]
     df_freq = df.copy().loc[::, ['group', 'id']]
     df_gc_out = fea_mut_gc(df_gc)     #求df_gc 的均值和方差
@@ -201,29 +201,31 @@ def main(argv=sys.argv):
     plist = []
     for line in open(tumors_file, 'rt'):  #rt模式下，python在读取文本时会自动把\r\n转换成\n.
         txt = line.rstrip().split('\t')
-        tumors_set[txt[0]] = txt[1]
-    path = './%s/' % tumors_set[args.tumor]
+        tumors_set[txt[0]] = txt[1]  #将tumors.txt中的数据加载到tumors_set中
+    path = './%s/' % tumors_set[args.tumor]  #创建运行的癌症类型的路径
     if not exists(path):
         os.makedirs(path)
     df_samples = pd.read_csv(samples_file, header=0, sep=',',
                              usecols=['tumour_specimen_aliquot_id', 'normal_specimen_aliquot_id',
-                                      'histology_abbreviation', 'submitted_donor_id'])#usecols 只返回列表中出现的列的信息
+                                      'histology_abbreviation', 'submitted_donor_id'])  #header默认为0，标签为0（即第1行）的行为表头
+                                                                                        #usecols 只返回列表中出现的列的信息
     if args.tumor != 'Pancan':
-        df_samples = df_samples[df_samples['histology_abbreviation'] == args.tumor]#'histology_abbreviation' 组织病学缩写
+        df_samples = df_samples[df_samples['histology_abbreviation'] == args.tumor]     #'histology_abbreviation' 组织病学缩写
+                                                                                        #列出'histology_abbreviation' == args.tumor的所有数据传给da_samples
     else:
-        plist = ['Ovary-AdenoCA', 'CNS-Medullo', 'Biliary-AdenoCA', 'Breast-AdenoCA', 'CNS-PiloAstro', 'Bone-Osteosarc',
+        plist = ['Ovary-AdenoCA', 'CNS-Medullo', 'Biliary-AdenoCA', 'Breast-AdenoCA', 'CN`S-PiloAstro', 'Bone-Osteosarc',
                  'Myeloid-AML', 'Bone-Epith', 'Liver-HCC', 'Prost-AdenoCA', 'Panc-Endocrine', 'Breast-LobularCA',
                  'Myeloid-MDS', 'Head-SCC', 'Eso-AdenoCA', 'Stomach-AdenoCA', 'Panc-AdenoCA', 'Bone-Cart',
                  'Breast-DCIS', 'Myeloid-MPN', 'Kidney-RCC']
         df_samples = df_samples[df_samples['histology_abbreviation'].isin(plist)]
-    sample_ids = df_samples.loc[::, 'tumour_specimen_aliquot_id'].values.astype(str)
-    rna_ids = df_samples.loc[::, 'submitted_donor_id'].values.astype(str)
+    sample_ids = df_samples.loc[::, 'tumour_specimen_aliquot_id'].values.astype(str) #取出列'tumour_specimen_aliquot_id'的值并把类型转变为str
+    rna_ids = df_samples.loc[::, 'submitted_donor_id'].values.astype(str)            #取出列'submitted_donor_id'的值并把类型转变为str
     samples = {}
     rnas = {}
     for id in sample_ids:
-        samples[id] = 1
+        samp les[id] = 1                   #迭代把sample_ids中的数据放到samples中并且把值置为1
     for i in range(len(sample_ids)):
-        rnas[rna_ids[i]] = sample_ids[i]
+        rnas[rna_ids[i]] = sample_ids[i]  #rnas的数据格式为 {submitted：tumour_specimen_aliquot_id}
     dfs = []
     # df_tmp = pd.read_csv('./chr_id.txt', header=None, index_col=3, sep='\t', usecols=[0, 1, 2, 3])
     # df_tmp.columns = ['chr', 'start', 'end']
@@ -236,19 +238,19 @@ def main(argv=sys.argv):
     df0 = pd.read_csv(args.input, header=0, index_col=3, sep='\t')
     df0 = df0.loc[::, []]
     print(df0.shape[0])
-    id_tmp = list(pd.read_csv(args.input, header=0, index_col=3, sep='\t').index)
+    id_tmp = list(pd.read_csv(args.input, header=0, index_col=3, sep='\t').index) #把输入数据的index放入到一个列表中
     ids = {}
     for id in id_tmp:
-        ids[id] = 1
+        ids[id] = 1  #将id_tmp中的数据放入到ids中值置为1
     outfile = './%s/%s.fea' % (path, args.mode)
     if args.mode == 'mut':
         input_file = '../data/ICGC/final_consensus_passonly.snv_mnv_indel.icgc.public.maf.gz'
         df = pd.read_csv(input_file, header=0, sep='\t',
                          usecols=['Chromosome', 'Start_position', 'End_position', 'Variant_Classification',
                                   'Variant_Type', 'Tumor_Sample_Barcode', 'gc_content'])
-        df.columns = ['chr', 'start', 'end', 'type', 'snp', 'id', 'gc']
-        df = df.loc[df['id'].isin(samples), :]
-        X = fea_mut(df)
+        df.columns = ['chr', 'start', 'end', 'type', 'snp', 'id', 'gc']  #重置列名
+        df = df.loc[df['id'].isin(samples), :]                           #读取出Tumor_Sample_Barcode==id在samples中的数据
+        X = fea_mut(df)  #调用fea_mut函数
         # X = pd.concat([X1, X2], axis=1)
         print(X.shape)
     elif args.mode == 'cna':
