@@ -78,10 +78,11 @@ def fea_mut_len(df_ori):
     return df
 
 
-def fea_mut_gc(df_ori):
+def fea_mut_gc(df_ori):  #求gc的均值和方差
+    #df.groupby('A').mean()  按A列分组（groupby），获取其他列的均值 
     df = df_ori.copy()
-    df_mean = df.groupby('group').agg(q=('gc', 'mean')).reset_index()
-    df_var = df.groupby('group').agg(q=('gc', 'var')).reset_index()
+    df_mean = df.groupby('group').agg(q=('gc', 'mean')).reset_index()   #按group分组  然后求出每组gc的平均值 reset_index 还原索引
+    df_var = df.groupby('group').agg(q=('gc', 'var')).reset_index()     #按group分组  然后求出每组gc的方差
     df_mean.index = df_mean['group']
     df_var.index = df_var['group']
     df_mean = df_mean.loc[::, ['q']]
@@ -105,12 +106,12 @@ def fea_mut(df):
     df_len = df.copy().loc[::, ['group', 'len']]
     df_gc = df.copy().loc[::, ['group', 'gc']]
     df_freq = df.copy().loc[::, ['group', 'id']]
-    df_gc_out = fea_mut_gc(df_gc)
-    df_len_out = fea_mut_len(df_len)
+    df_gc_out = fea_mut_gc(df_gc)     #求df_gc 的均值和方差
+    df_len_out = fea_mut_len(df_len)  #求df_len的长度
     # df = df.drop_duplicates(subset=['group', 'id'], keep='first')
     df = df.loc[::, ['group', 'type', 'snp']]
     df = fea_mut_all(df, 'freq')
-    df_add = fea_mut_mean(df_freq)
+    df_add = fea_mut_mean(df_freq)#求均值和方差
     df = pd.concat([df, df_add, df_gc_out, df_len_out], axis=1)
     return df
 
@@ -198,7 +199,7 @@ def main(argv=sys.argv):
     samples_file = '../data/ICGC/samples_info.csv'
     tumors_set = {'Pancan': 'Pancan'}
     plist = []
-    for line in open(tumors_file, 'rt'):
+    for line in open(tumors_file, 'rt'):  #rt模式下，python在读取文本时会自动把\r\n转换成\n.
         txt = line.rstrip().split('\t')
         tumors_set[txt[0]] = txt[1]
     path = './%s/' % tumors_set[args.tumor]
@@ -206,9 +207,9 @@ def main(argv=sys.argv):
         os.makedirs(path)
     df_samples = pd.read_csv(samples_file, header=0, sep=',',
                              usecols=['tumour_specimen_aliquot_id', 'normal_specimen_aliquot_id',
-                                      'histology_abbreviation', 'submitted_donor_id'])
+                                      'histology_abbreviation', 'submitted_donor_id'])#usecols 只返回列表中出现的列的信息
     if args.tumor != 'Pancan':
-        df_samples = df_samples[df_samples['histology_abbreviation'] == args.tumor]
+        df_samples = df_samples[df_samples['histology_abbreviation'] == args.tumor]#'histology_abbreviation' 组织病学缩写
     else:
         plist = ['Ovary-AdenoCA', 'CNS-Medullo', 'Biliary-AdenoCA', 'Breast-AdenoCA', 'CNS-PiloAstro', 'Bone-Osteosarc',
                  'Myeloid-AML', 'Bone-Epith', 'Liver-HCC', 'Prost-AdenoCA', 'Panc-Endocrine', 'Breast-LobularCA',
@@ -259,7 +260,7 @@ def main(argv=sys.argv):
         df_amp = df.loc[df['cna'] >= 1e-8, ::]
         df_del = df.loc[df['cna'] < -1e-8, ::]
         df_all = df.copy().loc[df['cna'] != 0, ::]
-        X1 = fea_cna(df_amp, 'amp')
+        X1 = fea_cna(df_amp, 'amp')  #求amp相关的统计量
         X2 = fea_cna(df_del, 'del')
         df_all['cna'] = df_all['cna'].abs()
         X3 = fea_cna(df_all, 'abs')
@@ -322,7 +323,7 @@ def main(argv=sys.argv):
     for col in cols:
         df0[col] = 0.0
         df0.loc[fea_ids, col] = X.loc[fea_ids, col].values.astype(float)
-    df0 = df0.fillna(0.0)
+    df0 = df0.fillna(0.0) #缺失值填充0.0
     # df_tmp = df0.sort_values(by=['q'], ascending=[False])
     # print(df_tmp.head(5))
     df0.to_csv(outfile, header=True, index=True, sep='\t')
