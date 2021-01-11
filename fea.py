@@ -223,7 +223,7 @@ def main(argv=sys.argv):
     samples = {}
     rnas = {}
     for id in sample_ids:
-        samp les[id] = 1                   #迭代把sample_ids中的数据放到samples中并且把值置为1
+        samples[id] = 1                   #迭代把sample_ids中的数据放到samples中并且把值置为1
     for i in range(len(sample_ids)):
         rnas[rna_ids[i]] = sample_ids[i]  #rnas的数据格式为 {submitted：tumour_specimen_aliquot_id}
     dfs = []
