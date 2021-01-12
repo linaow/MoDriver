@@ -124,7 +124,8 @@ def fea_cna(df, col_name):
     sample_bed = './chr_id.bed'
     df.loc[::, ['chr', 'start', 'end', 'cna']].to_csv(fea_bed, header=False, index=False, sep='\t')
     df.loc[::, ['chr', 'start', 'end', 'id']].to_csv(freq_bed, header=False, index=False, sep='\t')
-    cmd = "bedtools intersect -wb -a %s -b %s >%s" % (sample_bed, fea_bed, tmp_bed)
+    cmd = "bedtools intersect -wb -a %s -b %s >%s" % (sample_bed, fea_bed, tmp_bed) 
+                              #求sampled_bed,和fea_bed染色体的交集，以及对应的交集在fea_bed中的位置
     print(cmd)
     check_output(cmd, shell=True)
     df = pd.read_csv(tmp_bed, header=None, sep='\t', usecols=[3, 8])
